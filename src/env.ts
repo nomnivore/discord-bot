@@ -3,6 +3,8 @@ import { z } from "zod";
 
 const envSchema = z.object({
   DISCORD_API_TOKEN: z.string().nonempty(),
+  DISCORD_CLIENT_ID: z.string().nonempty(),
+  DISCORD_DEV_GUILD_ID: z.string().nonempty(),
 });
 
 export type Env = z.infer<typeof envSchema>;
