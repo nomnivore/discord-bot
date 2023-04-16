@@ -10,8 +10,10 @@ import path from "path";
 import { BotCommand } from "./botCommand.js";
 import * as fs from "fs/promises";
 import * as url from "url";
+import { BotListener } from "./botListener.js";
 
 type BotCommandConstructor = new () => BotCommand;
+type BotListenerConstructor = new () => BotListener;
 
 export class BotClient extends Client {
   commands = new Collection<string, BotCommand>();
@@ -23,7 +25,7 @@ export class BotClient extends Client {
   }
 
   async setup() {
-    this.registerListeners();
+    await this.registerListeners();
     await this.registerCommands();
   }
 
@@ -52,39 +54,44 @@ export class BotClient extends Client {
     console.log(this.commands);
   }
 
-  registerListeners() {
-    // respond to slash commands
-    this.on(Events.InteractionCreate, async (interaction) => {
-      if (!interaction.isChatInputCommand()) return;
+  async registerListeners() {
+    const listnersDirUrl = new URL("listeners", import.meta.url);
+    const listenersDir = url.fileURLToPath(listnersDirUrl);
 
-      const command = this.commands.get(interaction.commandName);
-      if (!command) {
-        console.log(`Unknown command: ${interaction.commandName}`);
-        return;
-      }
+    // get all js/ts files
+    const listenersFiles = (await fs.readdir(listenersDir))
+      .map((f) => f.replace(/\.ts$/, ".js"))
+      .filter((f) => f.endsWith(".js"));
 
-      try {
-        await command.run(interaction);
-      } catch (err) {
-        console.log(err);
-        const reply = {
-          content: "There was an error while executing this command!",
-          ephemeral: true,
-        };
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp(reply);
-        } else {
-          await interaction.reply(reply);
+    for (const file of listenersFiles) {
+      const filePath = path.join(listenersDir, file);
+
+      // TODO: properly validate types
+
+      const listenerModule = (await import(filePath)) as {
+        default: BotListenerConstructor;
+      };
+
+      const listener = new listenerModule.default();
+      // TODO: listeners store
+
+      // this.on(), passing client + all listener params to the listener
+      const onOrOnce = listener.once
+        ? this.once.bind(this)
+        : this.on.bind(this);
+
+      onOrOnce(listener.event, async (...args) => {
+        try {
+          await listener.run(this, args);
+        } catch (err) {
+          console.log(`There was an error while executing listener ${file}:`);
+          console.log(err);
         }
-      }
-    });
+      });
+    }
   }
 
   async start() {
-    this.once(Events.ClientReady, (c) => {
-      console.log(`Ready! Logged in as ${c.user.tag}`);
-    });
-
     await this.login(Env.DISCORD_API_TOKEN);
   }
 }
