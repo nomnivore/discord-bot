@@ -1,15 +1,11 @@
 import { ClientEvents, Events } from "discord.js";
 import { BotClient } from "./app.js";
 
-// export type EventCallback<T extends keyof ClientEvents> = (
-//   client: BotClient,
-//   ...args: ClientEvents[T]
-// ) => Promise<unknown>;
+type EventArguments<T extends keyof ClientEvents> = ClientEvents[T];
 
-export abstract class BotListener {
-  // what is the correct type for this?
-  abstract readonly event: keyof ClientEvents;
+export interface BotListener<E extends keyof ClientEvents> {
+  event: E;
   once?: boolean;
 
-  abstract run(client: BotClient, ...args: unknown[]): Promise<unknown>;
+  run(client: BotClient, ...args: EventArguments<E>): Promise<unknown>;
 }

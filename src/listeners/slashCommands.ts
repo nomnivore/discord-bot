@@ -1,15 +1,10 @@
-import { ClientEvents } from "discord.js";
+import { InteractionReplyOptions } from "discord.js";
 import { BotListener } from "../botListener.js";
-import { BotClient } from "../app.js";
 
-export default class implements BotListener {
-  // event type is ClientEvents, should correspond to InteractionCreate
-  event: keyof ClientEvents = "interactionCreate";
+const SlashCommands: BotListener<"interactionCreate"> = {
+  event: "interactionCreate",
 
-  async run(
-    client: BotClient,
-    [interaction]: ClientEvents["interactionCreate"]
-  ) {
+  async run(client, interaction) {
     // respond to slash commands
     if (!interaction.isChatInputCommand()) return;
 
@@ -23,7 +18,7 @@ export default class implements BotListener {
       await command.run(interaction);
     } catch (err) {
       console.log(err);
-      const reply = {
+      const reply: InteractionReplyOptions = {
         content: "There was an error while executing this command!",
         ephemeral: true,
       };
@@ -33,5 +28,7 @@ export default class implements BotListener {
         await interaction.reply(reply);
       }
     }
-  }
-}
+  },
+};
+
+export default SlashCommands;

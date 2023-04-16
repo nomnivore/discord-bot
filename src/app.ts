@@ -13,7 +13,6 @@ import * as url from "url";
 import { BotListener } from "./botListener.js";
 
 type BotCommandConstructor = new () => BotCommand;
-type BotListenerConstructor = new () => BotListener;
 
 export class BotClient extends Client {
   commands = new Collection<string, BotCommand>();
@@ -32,7 +31,6 @@ export class BotClient extends Client {
   async registerCommands() {
     const commandsDirUrl = new URL("commands", import.meta.url);
     const commandsDir = url.fileURLToPath(commandsDirUrl);
-    console.log(commandsDir);
     // get all js/ts files
     const commandsFiles = (await fs.readdir(commandsDir))
       .map((f) => f.replace(/\.ts$/, ".js"))
@@ -51,7 +49,7 @@ export class BotClient extends Client {
       this.commands.set(command.meta.name, command);
     }
 
-    console.log(this.commands);
+    console.log(`Registered ${this.commands.size} commands.`);
   }
 
   async registerListeners() {
@@ -69,20 +67,22 @@ export class BotClient extends Client {
       // TODO: properly validate types
 
       const listenerModule = (await import(filePath)) as {
-        default: BotListenerConstructor;
+        // TODO: can this be typed better?
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        default: BotListener<any>;
       };
 
-      const listener = new listenerModule.default();
+      const listener = listenerModule.default;
       // TODO: listeners store
 
-      // this.on(), passing client + all listener params to the listener
       const onOrOnce = listener.once
         ? this.once.bind(this)
         : this.on.bind(this);
 
-      onOrOnce(listener.event, async (...args) => {
+      onOrOnce(listener.event, async (...args: unknown[]) => {
         try {
-          await listener.run(this, args);
+          await listener.run(this, ...args);
         } catch (err) {
           console.log(`There was an error while executing listener ${file}:`);
           console.log(err);
