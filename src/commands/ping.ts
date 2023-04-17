@@ -1,10 +1,10 @@
 import { SlashCommandBuilder, CommandInteraction } from "discord.js";
 import { BotCommand } from "../botCommand.js";
 
-export default class extends BotCommand {
-  meta = new SlashCommandBuilder()
+const command: BotCommand = {
+  meta: new SlashCommandBuilder()
     .setName("ping")
-    .setDescription("Replies with Pong!");
+    .setDescription("Replies with Pong!"),
 
   async run(interaction: CommandInteraction) {
     const msg = await interaction.reply("Pong!");
@@ -15,5 +15,7 @@ export default class extends BotCommand {
     return interaction.editReply(
       `Pong! ✅ (Roundtrip: ${diff}ms | Heartbeat: ${ping}ms)`
     );
-  }
-}
+  },
+};
+
+export default command;

@@ -1,21 +1,21 @@
 import {
   Client,
-  Events,
-  GatewayIntentBits,
   ClientOptions,
   Collection,
+  GatewayIntentBits,
 } from "discord.js";
-import { Env } from "./env.js";
-import path from "path";
-import { BotCommand } from "./botCommand.js";
 import * as fs from "fs/promises";
+import path from "path";
 import * as url from "url";
+import { BotCommand } from "./botCommand.js";
 import { BotListener } from "./botListener.js";
-
-type BotCommandConstructor = new () => BotCommand;
+import { Env } from "./env.js";
 
 export class BotClient extends Client {
-  commands = new Collection<string, BotCommand>();
+  stores = {
+    commands: new Collection<string, BotCommand>(),
+    listeners: new Collection<string, BotListener<any>>(),
+  };
 
   constructor(
     options: ClientOptions = { intents: [GatewayIntentBits.Guilds] }
@@ -42,14 +42,14 @@ export class BotClient extends Client {
       // TODO: properly validate types
 
       const commandModule = (await import(filePath)) as {
-        default: BotCommandConstructor;
+        default: BotCommand;
       };
 
-      const command = new commandModule.default();
-      this.commands.set(command.meta.name, command);
+      const command = commandModule.default;
+      this.stores.commands.set(command.meta.name, command);
     }
 
-    console.log(`Registered ${this.commands.size} commands.`);
+    console.log(`Registered ${this.stores.commands.size} commands.`);
   }
 
   async registerListeners() {
@@ -63,8 +63,6 @@ export class BotClient extends Client {
 
     for (const file of listenersFiles) {
       const filePath = path.join(listenersDir, file);
-
-      // TODO: properly validate types
 
       const listenerModule = (await import(filePath)) as {
         // TODO: can this be typed better?
@@ -89,6 +87,8 @@ export class BotClient extends Client {
         }
       });
     }
+
+    console.log(`Registered ${listenersFiles.length} listeners.`);
   }
 
   async start() {

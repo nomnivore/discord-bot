@@ -8,7 +8,7 @@ const SlashCommands: BotListener<"interactionCreate"> = {
     // respond to slash commands
     if (!interaction.isChatInputCommand()) return;
 
-    const command = client.commands.get(interaction.commandName);
+    const command = client.stores.commands.get(interaction.commandName);
     if (!command) {
       console.log(`Unknown command: ${interaction.commandName}`);
       return;
