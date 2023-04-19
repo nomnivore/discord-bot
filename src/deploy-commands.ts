@@ -3,13 +3,13 @@ import { Env } from "./env.js";
 import * as fs from "fs/promises";
 import path from "path";
 
-import { BotClient } from "./index.js";
+import { BotClient } from "./app.js";
 
 const client = new BotClient({ intents: [] });
 
 await client.registerCommands();
 
-const cmdJson = client.commands.map((c) => c.meta.toJSON());
+const cmdJson = client.stores.commands.map((c) => c.meta.toJSON());
 
 const rest = new REST().setToken(Env.DISCORD_API_TOKEN);
 
