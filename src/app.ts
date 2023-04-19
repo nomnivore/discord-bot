@@ -14,6 +14,7 @@ import { Env } from "./env.js";
 export class BotClient extends Client {
   stores = {
     commands: new Collection<string, BotCommand>(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listeners: new Collection<string, BotListener<any>>(),
   };
 
@@ -28,9 +29,23 @@ export class BotClient extends Client {
     await this.registerCommands();
   }
 
-  async registerCommands() {
+  async registerCommands(folderPath?: string) {
     const commandsDirUrl = new URL("commands", import.meta.url);
-    const commandsDir = url.fileURLToPath(commandsDirUrl);
+    const commandsDir = path.join(
+      url.fileURLToPath(commandsDirUrl),
+      folderPath ?? ""
+    );
+    // get all folders
+    const commandFolders: string[] = [];
+    for (const item of await fs.readdir(commandsDir)) {
+      if ((await fs.stat(path.join(commandsDir, item))).isDirectory()) {
+        commandFolders.push(item);
+      }
+    }
+    // recursively register commands in subfolders
+    for (const folder of commandFolders) {
+      await this.registerCommands(folder);
+    }
     // get all js/ts files
     const commandsFiles = (await fs.readdir(commandsDir))
       .map((f) => f.replace(/\.ts$/, ".js"))
@@ -49,9 +64,13 @@ export class BotClient extends Client {
       this.stores.commands.set(command.meta.name, command);
     }
 
-    console.log(`Registered ${this.stores.commands.size} commands.`);
+    if (folderPath === undefined) {
+      // base case
+      console.log(`Registered ${this.stores.commands.size} commands.`);
+    }
   }
 
+  // TODO: recursively add listeners in subfolders
   async registerListeners() {
     const listnersDirUrl = new URL("listeners", import.meta.url);
     const listenersDir = url.fileURLToPath(listnersDirUrl);
