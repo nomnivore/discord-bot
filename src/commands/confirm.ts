@@ -13,17 +13,8 @@ const command: BotCommand = {
     .setDescription("Confirm a command (proof of concept)"),
 
   async run(interaction) {
-    const confirmButton = new ButtonBuilder()
-      .setLabel("Confirm")
-      .setCustomId("confirm")
-      .setStyle(ButtonStyle.Success)
-      .setEmoji("✅");
+    const { confirmButton, cancelButton } = createUI();
 
-    const cancelButton = new ButtonBuilder()
-      .setLabel("Cancel")
-      .setCustomId("cancel")
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji("❌");
     const confirmMsg = await interaction.reply({
       content: "Please confirm this action",
       ephemeral: true,
@@ -62,5 +53,24 @@ const command: BotCommand = {
     }
   },
 };
+
+function createUI() {
+  const confirmButton = new ButtonBuilder()
+    .setLabel("Confirm")
+    .setCustomId("confirm")
+    .setStyle(ButtonStyle.Success)
+    .setEmoji("✅");
+
+  const cancelButton = new ButtonBuilder()
+    .setLabel("Cancel")
+    .setCustomId("cancel")
+    .setStyle(ButtonStyle.Secondary)
+    .setEmoji("❌");
+
+  return {
+    confirmButton,
+    cancelButton,
+  };
+}
 
 export default command;
