@@ -70,10 +70,24 @@ export class BotClient extends Client {
     }
   }
 
-  // TODO: recursively add listeners in subfolders
-  async registerListeners() {
+  async registerListeners(folderPath?: string) {
     const listnersDirUrl = new URL("listeners", import.meta.url);
-    const listenersDir = url.fileURLToPath(listnersDirUrl);
+    const listenersDir = path.join(
+      url.fileURLToPath(listnersDirUrl),
+      folderPath ?? ""
+    );
+
+    // get all folders
+    const listenerFolders: string[] = [];
+    for (const item of await fs.readdir(listenersDir)) {
+      if ((await fs.stat(path.join(listenersDir, item))).isDirectory()) {
+        listenerFolders.push(item);
+      }
+    }
+    // recursively register listeners in subfolders
+    for (const folder of listenerFolders) {
+      await this.registerListeners(folder);
+    }
 
     // get all js/ts files
     const listenersFiles = (await fs.readdir(listenersDir))
@@ -91,7 +105,11 @@ export class BotClient extends Client {
       };
 
       const listener = listenerModule.default;
-      // TODO: listeners store
+      const filename = path.basename(filePath);
+      this.stores.listeners.set(
+        `${listener.event as string}:${filename}`,
+        listener
+      );
 
       const onOrOnce = listener.once
         ? this.once.bind(this)
@@ -106,8 +124,10 @@ export class BotClient extends Client {
         }
       });
     }
-
-    console.log(`Registered ${listenersFiles.length} listeners.`);
+    if (folderPath === undefined) {
+      // base case
+      console.log(`Registered ${this.stores.listeners.size} listeners.`);
+    }
   }
 
   async start() {
