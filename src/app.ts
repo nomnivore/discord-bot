@@ -76,7 +76,6 @@ export class BotClient extends Client {
       url.fileURLToPath(listnersDirUrl),
       folderPath ?? ""
     );
-    console.log(folderPath);
 
     // get all folders
     const listenerFolders: string[] = [];
