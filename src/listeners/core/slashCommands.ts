@@ -1,5 +1,5 @@
 import { InteractionReplyOptions } from "discord.js";
-import { BotListener } from "../botListener.js";
+import { BotListener } from "@/botListener.js";
 
 const SlashCommands: BotListener<"interactionCreate"> = {
   event: "interactionCreate",

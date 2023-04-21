@@ -11,6 +11,10 @@
     "esModuleInterop": true,
     "declaration": true,
     "noEmit": true,
+    "baseUrl": ".", // This must be specified if "paths" is.
+    "paths": {
+      "@/*": ["src/*"]
+    },
 
     "typeRoots": ["node_modules/@types", "src/types"]
   },

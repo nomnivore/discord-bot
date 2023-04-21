@@ -76,6 +76,7 @@ export class BotClient extends Client {
       url.fileURLToPath(listnersDirUrl),
       folderPath ?? ""
     );
+    console.log(folderPath);
 
     // get all folders
     const listenerFolders: string[] = [];
@@ -105,11 +106,11 @@ export class BotClient extends Client {
       };
 
       const listener = listenerModule.default;
-      const filename = path.basename(filePath);
-      this.stores.listeners.set(
-        `${listener.event as string}:${filename}`,
-        listener
-      );
+      const filename = path.basename(filePath).replace(/\.js$/, "");
+      const key = `${listener.event as string}:${
+        folderPath ? folderPath + ":" : ""
+      }${filename}`;
+      this.stores.listeners.set(key, listener);
 
       const onOrOnce = listener.once
         ? this.once.bind(this)

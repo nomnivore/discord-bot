@@ -1,4 +1,4 @@
-import { BotListener } from "../../botListener.js";
+import { BotListener } from "@/botListener.js";
 
 const OnReady: BotListener<"ready"> = {
   event: "ready",
