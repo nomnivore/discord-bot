@@ -5,19 +5,21 @@ const SlashCommands: BotListener<"interactionCreate"> = {
   event: "interactionCreate",
 
   async run(client, interaction) {
+    const { logger } = client;
     // respond to slash commands
     if (!interaction.isChatInputCommand()) return;
 
     const command = client.stores.commands.get(interaction.commandName);
     if (!command) {
-      console.log(`Unknown command: ${interaction.commandName}`);
+      logger.warn(`Unknown command: ${interaction.commandName}`);
       return;
     }
 
     try {
+      logger.debug(`Executing command: ${command.meta.name}`);
       await command.run(interaction);
     } catch (err) {
-      console.log(err);
+      logger.error(err);
       const reply: InteractionReplyOptions = {
         content: "There was an error while executing this command!",
         ephemeral: true,

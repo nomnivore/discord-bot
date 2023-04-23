@@ -10,6 +10,7 @@ import * as url from "url";
 import { BotCommand } from "./botCommand.js";
 import { BotListener } from "./botListener.js";
 import { Env } from "./env.js";
+import { Logger } from "./util/logger.js";
 
 export class BotClient extends Client {
   stores = {
@@ -17,6 +18,8 @@ export class BotClient extends Client {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listeners: new Collection<string, BotListener<any>>(),
   };
+
+  logger = new Logger(0);
 
   constructor(
     options: ClientOptions = { intents: [GatewayIntentBits.Guilds] }
@@ -66,7 +69,7 @@ export class BotClient extends Client {
 
     if (folderPath === undefined) {
       // base case
-      console.log(`Registered ${this.stores.commands.size} commands.`);
+      this.logger.info(`Registered ${this.stores.commands.size} commands.`);
     }
   }
 
@@ -119,14 +122,16 @@ export class BotClient extends Client {
         try {
           await listener.run(this, ...args);
         } catch (err) {
-          console.log(`There was an error while executing listener ${file}:`);
-          console.log(err);
+          this.logger.error(
+            `There was an error while executing listener ${file}:`
+          );
+          this.logger.error(err);
         }
       });
     }
     if (folderPath === undefined) {
       // base case
-      console.log(`Registered ${this.stores.listeners.size} listeners.`);
+      this.logger.info(`Registered ${this.stores.listeners.size} listeners.`);
     }
   }
 

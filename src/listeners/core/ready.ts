@@ -5,8 +5,8 @@ const OnReady: BotListener<"ready"> = {
   once: true,
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  async run(_, client) {
-    console.log(`Logged in as ${client.user.tag}!`);
+  async run({ logger }, client) {
+    logger.info(`Logged in as ${client.user.tag}!`);
   },
 };
 

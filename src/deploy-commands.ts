@@ -1,7 +1,5 @@
 import { REST, Routes } from "discord.js";
 import { Env } from "./env.js";
-import * as fs from "fs/promises";
-import path from "path";
 
 import { BotClient } from "./app.js";
 
@@ -13,9 +11,11 @@ const cmdJson = client.stores.commands.map((c) => c.meta.toJSON());
 
 const rest = new REST().setToken(Env.DISCORD_API_TOKEN);
 
+const { logger } = client;
+
 // deploy commands
 try {
-  console.log(`Started refreshing ${cmdJson.length} application (/) commands.`);
+  logger.info(`Started refreshing ${cmdJson.length} application (/) commands.`);
 
   const data = await rest.put(
     Routes.applicationGuildCommands(
@@ -25,10 +25,10 @@ try {
     { body: cmdJson }
   );
   if (data != null && typeof data == "object" && "length" in data) {
-    console.log(
+    logger.info(
       `Successfully reloaded ${data.length as number} application (/) commands.`
     );
   }
 } catch (error) {
-  console.error(error);
+  logger.error(error);
 }
