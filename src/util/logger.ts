@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Chalk } from "chalk";
 
 export class Logger {

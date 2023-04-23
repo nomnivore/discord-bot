@@ -20,5 +20,9 @@
     "out/**/*",
     "coverage/**/*",
     "tmp/**/*"
-  ]
+  ],
+
+  "rules": {
+    "no-console": "warn"
+  }
 }
