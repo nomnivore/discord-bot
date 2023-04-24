@@ -32,31 +32,39 @@ export class BotClient extends Client {
     await this.registerCommands();
   }
 
-  async registerCommands(folderPath?: string) {
-    const commandsDirUrl = new URL("commands", import.meta.url);
-    const commandsDir = path.join(
-      url.fileURLToPath(commandsDirUrl),
-      folderPath ?? ""
-    );
+  private async recursiveLoader(
+    rootDir: string,
+    callback: (filePath: string, folderPath?: string) => Promise<void>,
+    folderPath?: string
+  ) {
+    const dirUrl = new URL(rootDir, import.meta.url);
+    const dir = path.join(url.fileURLToPath(dirUrl), folderPath ?? "");
+
     // get all folders
-    const commandFolders: string[] = [];
-    for (const item of await fs.readdir(commandsDir)) {
-      if ((await fs.stat(path.join(commandsDir, item))).isDirectory()) {
-        commandFolders.push(item);
+    const folders: string[] = [];
+    for (const item of await fs.readdir(dir)) {
+      if ((await fs.stat(path.join(dir, item))).isDirectory()) {
+        folders.push(item);
       }
     }
-    // recursively register commands in subfolders
-    for (const folder of commandFolders) {
-      await this.registerCommands(folder);
+    // recursively act in subfolders
+    for (const folder of folders) {
+      await this.recursiveLoader(rootDir, callback, folder);
     }
     // get all js/ts files
-    const commandsFiles = (await fs.readdir(commandsDir))
+    const files = (await fs.readdir(dir))
       .map((f) => f.replace(/\.ts$/, ".js"))
       .filter((f) => f.endsWith(".js"));
 
-    for (const file of commandsFiles) {
-      const filePath = path.join(commandsDir, file);
+    for (const file of files) {
+      const filePath = path.join(dir, file);
 
+      await callback(filePath, folderPath);
+    }
+  }
+
+  async registerCommands() {
+    await this.recursiveLoader("commands", async (filePath) => {
       // TODO: properly validate types
 
       const commandModule = (await import(filePath)) as {
@@ -65,41 +73,13 @@ export class BotClient extends Client {
 
       const command = commandModule.default;
       this.stores.commands.set(command.meta.name, command);
-    }
+    });
 
-    if (folderPath === undefined) {
-      // base case
-      this.logger.info(`Registered ${this.stores.commands.size} commands.`);
-    }
+    this.logger.info(`Registered ${this.stores.commands.size} commands.`);
   }
 
-  async registerListeners(folderPath?: string) {
-    const listnersDirUrl = new URL("listeners", import.meta.url);
-    const listenersDir = path.join(
-      url.fileURLToPath(listnersDirUrl),
-      folderPath ?? ""
-    );
-
-    // get all folders
-    const listenerFolders: string[] = [];
-    for (const item of await fs.readdir(listenersDir)) {
-      if ((await fs.stat(path.join(listenersDir, item))).isDirectory()) {
-        listenerFolders.push(item);
-      }
-    }
-    // recursively register listeners in subfolders
-    for (const folder of listenerFolders) {
-      await this.registerListeners(folder);
-    }
-
-    // get all js/ts files
-    const listenersFiles = (await fs.readdir(listenersDir))
-      .map((f) => f.replace(/\.ts$/, ".js"))
-      .filter((f) => f.endsWith(".js"));
-
-    for (const file of listenersFiles) {
-      const filePath = path.join(listenersDir, file);
-
+  async registerListeners() {
+    await this.recursiveLoader("listeners", async (filePath, folderPath) => {
       const listenerModule = (await import(filePath)) as {
         // TODO: can this be typed better?
 
@@ -123,16 +103,14 @@ export class BotClient extends Client {
           await listener.run(this, ...args);
         } catch (err) {
           this.logger.error(
-            `There was an error while executing listener ${file}:`
+            `There was an error while executing listener ${key}:`
           );
           this.logger.error(err);
         }
       });
-    }
-    if (folderPath === undefined) {
-      // base case
-      this.logger.info(`Registered ${this.stores.listeners.size} listeners.`);
-    }
+    });
+
+    this.logger.info(`Registered ${this.stores.listeners.size} listeners.`);
   }
 
   async start() {
