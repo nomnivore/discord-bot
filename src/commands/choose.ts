@@ -16,7 +16,7 @@ const command = {
         .setDescription("Second option")
     ),
 
-  async run(interaction) {
+  async run(_, interaction) {
     const options = z
       .object({
         option1: z.string().nonempty(),

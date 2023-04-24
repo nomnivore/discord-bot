@@ -17,7 +17,7 @@ const SlashCommands: BotListener<"interactionCreate"> = {
 
     try {
       logger.debug(`Executing command: ${command.meta.name}`);
-      await command.run(interaction);
+      await command.run(client, interaction);
     } catch (err) {
       logger.error(err);
       const reply: InteractionReplyOptions = {

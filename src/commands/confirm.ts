@@ -12,7 +12,7 @@ const command: BotCommand = {
     .setName("confirm")
     .setDescription("Confirm a command (proof of concept)"),
 
-  async run(interaction) {
+  async run(_, interaction) {
     const { confirmButton, cancelButton } = createUI();
 
     const confirmMsg = await interaction.reply({

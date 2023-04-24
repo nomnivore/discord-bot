@@ -6,7 +6,7 @@ const command: BotCommand = {
     .setName("ping")
     .setDescription("Replies with Pong!"),
 
-  async run(interaction: CommandInteraction) {
+  async run(_, interaction: CommandInteraction) {
     const msg = await interaction.reply("Pong!");
 
     const diff = msg.createdTimestamp - interaction.createdTimestamp;
