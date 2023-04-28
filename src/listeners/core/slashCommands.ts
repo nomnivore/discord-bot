@@ -1,5 +1,6 @@
 import { InteractionReplyOptions } from "discord.js";
-import { BotListener } from "@/botListener.js";
+import { BotListener } from "../../botListener.js";
+import { MiddlewareStackNextFunction } from "../../botMiddleware.js";
 
 const SlashCommands: BotListener<"interactionCreate"> = {
   event: "interactionCreate",
@@ -17,7 +18,23 @@ const SlashCommands: BotListener<"interactionCreate"> = {
 
     try {
       logger.debug(`Executing command: ${command.meta.name}`);
-      await command.run(client, interaction);
+
+      if (command.middleware) {
+        const stack = [...command.middleware].reverse();
+
+        const next: MiddlewareStackNextFunction = async () => {
+          const middleware = stack.pop();
+          if (middleware) {
+            await middleware(client, interaction, next);
+          } else {
+            await command.run(client, interaction);
+          }
+        };
+
+        await next();
+      } else {
+        await command.run(client, interaction);
+      }
     } catch (err) {
       logger.error(err);
       const reply: InteractionReplyOptions = {

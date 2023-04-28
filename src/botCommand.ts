@@ -1,10 +1,10 @@
 import {
   SlashCommandBuilder,
-  CommandInteraction,
-  SlashCommandSubcommandBuilder,
+  ChatInputCommandInteraction,
   SlashCommandSubcommandsOnlyBuilder,
 } from "discord.js";
 import { BotClient } from "./app.js";
+import { MiddlewareFunction } from "./botMiddleware.js";
 
 type SlashCommandBaseBuilder = Omit<
   SlashCommandBuilder,
@@ -16,5 +16,12 @@ export interface BotCommand {
     | SlashCommandBuilder
     | SlashCommandSubcommandsOnlyBuilder
     | SlashCommandBaseBuilder;
-  run(client: BotClient, interaction: CommandInteraction): Promise<unknown>;
+  run(
+    client: BotClient,
+    interaction: ChatInputCommandInteraction
+  ): Promise<unknown>;
+
+  // middleware
+  // callback function that takes a collection of middleware function factories and returns an array of middleware functions
+  middleware?: MiddlewareFunction[];
 }

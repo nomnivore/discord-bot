@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, CommandInteraction } from "discord.js";
-import { BotCommand } from "@/botCommand.js";
+import { BotCommand } from "../../botCommand.js";
 
 const command: BotCommand = {
   meta: new SlashCommandBuilder()

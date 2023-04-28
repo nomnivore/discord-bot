@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
-import { BotCommand } from "@/botCommand.js";
+import { BotCommand } from "../botCommand.js";
 import { z } from "zod";
 
 const command = {
