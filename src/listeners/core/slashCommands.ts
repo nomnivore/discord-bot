@@ -17,7 +17,7 @@ const SlashCommands: BotListener<"interactionCreate"> = {
     }
 
     try {
-      logger.debug(`Executing command: ${command.meta.name}`);
+      logger.debug(`Slash command: ${command.meta.name}`);
 
       if (command.middleware) {
         const stack = [...command.middleware].reverse();

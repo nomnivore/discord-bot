@@ -11,6 +11,7 @@ import { BotCommand } from "./botCommand.js";
 import { BotListener } from "./botListener.js";
 import { Env } from "./env.js";
 import { Logger } from "./util/logger.js";
+import { performance } from "perf_hooks";
 
 export class BotClient extends Client {
   stores = {
@@ -21,6 +22,8 @@ export class BotClient extends Client {
 
   logger = new Logger(0);
 
+  private isSetup = false;
+
   constructor(
     options: ClientOptions = { intents: [GatewayIntentBits.Guilds] }
   ) {
@@ -28,8 +31,19 @@ export class BotClient extends Client {
   }
 
   async setup() {
+    if (this.isSetup) return;
+
+    // track time for this action
+    const startTime = performance.now();
+
     await this.registerListeners();
     await this.registerCommands();
+
+    this.isSetup = true;
+
+    const endTime = performance.now();
+    const time = (endTime - startTime).toFixed(2);
+    this.logger.debug(`Setup took ${time}ms.`);
   }
 
   private async recursiveLoader(
