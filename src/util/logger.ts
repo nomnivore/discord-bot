@@ -22,7 +22,7 @@ export class Logger {
         const level = this.logLevels.at(logLevel);
         if (level !== undefined) {
           console.log(
-            level.color(`[${level.label.toUpperCase()}]`).padEnd(8),
+            level.color(`[${level.label.toUpperCase()}]`.padEnd(7)),
             ...args
           );
         }
