@@ -11,6 +11,7 @@ import { BotCommand } from "./botCommand.js";
 import { BotListener } from "./botListener.js";
 import { Env } from "./env.js";
 import { Logger } from "./util/logger.js";
+import { prisma } from "./util/db.js";
 import { performance } from "perf_hooks";
 
 export class BotClient extends Client {
@@ -20,7 +21,8 @@ export class BotClient extends Client {
     listeners: new Collection<string, BotListener<any>>(),
   };
 
-  logger = new Logger(0);
+  readonly logger = new Logger(0);
+  readonly prisma = prisma;
 
   private isSetup = false;
 
