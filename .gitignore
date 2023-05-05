@@ -143,4 +143,6 @@ dist
 
 # End of https://www.toptal.com/developers/gitignore/api/node
 
+# prisma
 dev.db
+dev.db-journal
