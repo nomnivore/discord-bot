@@ -21,3 +21,14 @@ model Guild {
   active Boolean @default(true)
   prefix String  @default("!")
 }
+
+model VoiceChannelGenerator {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guildId      String
+  channelId    String
+  categoryId   String
+  nameTemplate String @default("%user%'s Channel")
+}

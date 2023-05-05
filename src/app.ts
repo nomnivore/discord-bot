@@ -27,7 +27,9 @@ export class BotClient extends Client {
   private isSetup = false;
 
   constructor(
-    options: ClientOptions = { intents: [GatewayIntentBits.Guilds] }
+    options: ClientOptions = {
+      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
+    }
   ) {
     super(options);
   }
