@@ -31,4 +31,19 @@ model VoiceChannelGenerator {
   channelId    String
   categoryId   String
   nameTemplate String @default("%user%'s Channel")
+
+  ephemeralVoiceChannels EphemeralVoiceChannel[]
+}
+
+model EphemeralVoiceChannel {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guildId   String
+  ownerId   String
+  channelId String
+
+  voiceChannelGenerator   VoiceChannelGenerator? @relation(fields: [voiceChannelGeneratorId], references: [id], onDelete: Cascade)
+  voiceChannelGeneratorId Int?
 }

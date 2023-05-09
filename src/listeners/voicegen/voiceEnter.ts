@@ -10,7 +10,6 @@ const VoiceEnterListener: BotListener<"voiceStateUpdate"> = {
       return;
 
     const { prisma, logger } = client;
-    logger.debug("voiceStateUpdate");
     const generator = await prisma.voiceChannelGenerator.findFirst({
       where: {
         channelId: newState.channelId,
@@ -18,6 +17,8 @@ const VoiceEnterListener: BotListener<"voiceStateUpdate"> = {
     });
 
     if (!generator) return;
+
+    logger.debug("User joined generator channel");
 
     // find category
     const categoryFromCache = newState.guild?.channels.cache.get(
@@ -65,6 +66,16 @@ const VoiceEnterListener: BotListener<"voiceStateUpdate"> = {
 
     // move member to new channel
     await member.voice.setChannel(newChannel);
+
+    // save channel to database
+    await prisma.ephemeralVoiceChannel.create({
+      data: {
+        channelId: newChannel.id,
+        voiceChannelGeneratorId: generator.id,
+        guildId: newState.guild.id,
+        ownerId: member.id,
+      },
+    });
   },
 };
 
