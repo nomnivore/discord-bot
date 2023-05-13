@@ -5,7 +5,6 @@ import {
   VoiceChannel,
 } from "discord.js";
 import { BotCommand, SlashCommandFunction } from "../botCommand.js";
-import { channel } from "diagnostics_channel";
 
 interface Subcommands {
   create: SlashCommandFunction;
