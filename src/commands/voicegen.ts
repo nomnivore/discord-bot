@@ -14,6 +14,8 @@ interface Subcommands {
   delete: SlashCommandFunction;
 }
 
+// TODO: extract logic to a service
+
 const command: BotCommand & Subcommands = {
   meta: new SlashCommandBuilder()
     .setName("voicegen")
@@ -62,6 +64,16 @@ const command: BotCommand & Subcommands = {
         ephemeral: true,
       });
     }
+
+    // get user perms
+    const member = interaction.guild.members.cache.get(interaction.user.id);
+    // check if user has channel management perms
+    if (!member?.permissions.has("ManageChannels", true)) {
+      return await interaction.reply({
+        content: "You do not have permission to use this command.",
+        ephemeral: true,
+      });
+    }
     // determine subcommand and call appropriate function
     const subcommandGroup = interaction.options.getSubcommandGroup();
     if (subcommandGroup === "delete") {
@@ -73,6 +85,8 @@ const command: BotCommand & Subcommands = {
       return await this.create(client, interaction);
     } else if (subcommand === "list") {
       return await this.list(client, interaction);
+    } else if (subcommand === "sync") {
+      return await this.sync(client, interaction);
     }
   },
 
@@ -149,6 +163,7 @@ const command: BotCommand & Subcommands = {
   },
 
   async sync(client, interaction) {
+    await interaction.deferReply({ ephemeral: true });
     if (!interaction.guild) {
       throw new Error("This command must be used in a server.");
     }
@@ -202,14 +217,12 @@ const command: BotCommand & Subcommands = {
       }
     }
 
-    return await interaction.reply({
+    return await interaction.editReply({
       content: "Synced Voice Channel Generators and Ephemeral Channels.",
-      ephemeral: true,
     });
   },
 
   async delete(client, interaction) {
-    await interaction.deferReply();
     if (!interaction.guild) {
       throw new Error("This command must be used in a server.");
     }
