@@ -15,7 +15,7 @@ const configChoices = Object.keys(config).map((key) => {
 const ConfigCommand: BotCommand = {
   meta: new SlashCommandBuilder()
     .setName("config")
-    .setDescription("Configure the bot's settings")
+    .setDescription("Configure the bot's settings (WIP)")
     .addSubcommand((sub) =>
       sub
         .setName("get")
