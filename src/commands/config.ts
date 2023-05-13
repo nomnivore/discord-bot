@@ -42,7 +42,6 @@ const ConfigCommand: BotCommand = {
     ),
 
   async run(client, interaction) {
-    if (!interaction.isChatInputCommand()) return;
     const subcommand = interaction.options.getSubcommand();
     client.logger.debug(subcommand);
 

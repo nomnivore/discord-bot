@@ -21,7 +21,9 @@ export class Logger {
       if (logLevel >= this.logLevel) {
         const level = this.logLevels.at(logLevel);
         if (level !== undefined) {
+          const time = new Date().toLocaleTimeString([], { hour12: false });
           console.log(
+            level.color(`[${time}]`),
             level.color(`[${level.label.toUpperCase()}]`.padEnd(7)),
             ...args
           );

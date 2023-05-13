@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Guild {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guildId   String @unique
+  guildName String
+
+  active Boolean @default(true)
+  prefix String  @default("!")
+}
+
+model VoiceChannelGenerator {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guildId      String
+  channelId    String
+  categoryId   String
+  nameTemplate String @default("%user%'s Channel")
+
+  ephemeralVoiceChannels EphemeralVoiceChannel[]
+}
+
+model EphemeralVoiceChannel {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guildId   String
+  ownerId   String
+  channelId String
+
+  voiceChannelGenerator   VoiceChannelGenerator? @relation(fields: [voiceChannelGeneratorId], references: [id], onDelete: Cascade)
+  voiceChannelGeneratorId Int?
+}
