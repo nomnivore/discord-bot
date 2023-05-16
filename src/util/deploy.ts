@@ -3,7 +3,7 @@ import { REST, Routes } from "discord.js";
 import { Env } from "../env.js";
 import { BotClient } from "../app.js";
 
-class DeployCommands {
+class APIDeployer {
   private client: BotClient;
   private rest: REST;
 
@@ -13,17 +13,21 @@ class DeployCommands {
     this.rest = new REST().setToken(Env.DISCORD_API_TOKEN);
   }
 
-  async deploy() {
+  /**
+   * Deploy commands to Discord API.
+   * @param guildId - The guild ID to deploy to, or "global" || undefined to deploy globally.
+   */
+  async deploy(guildId?: string) {
     const { logger, prisma } = this.client;
-    const guildId = Env.DISCORD_DEV_GUILD_ID;
-    logger.info(`Deploying commands to: ${guildId}`);
+    const deployId = guildId ?? "global";
+    logger.info(`Deploying commands to: ${deployId}`);
     // ensure commands are actually loaded to the bot
     if (!this.commandsLoaded()) {
       logger.error("Error while deploying: Commands not loaded");
       return;
     }
     // fetch last deployment hash from db
-    const lastHashModel = await this.getLastHash();
+    const lastHashModel = await this.getLastHash(deployId);
     const lastHash = lastHashModel?.hash ?? null;
     // compute json and hash
     const cmdJson = this.createCmdJson();
@@ -41,10 +45,7 @@ class DeployCommands {
     try {
       logger.info(`Publishing ${cmdJson.length} application (/) commands...`);
 
-      const data = await this.rest.put(
-        Routes.applicationGuildCommands(Env.DISCORD_CLIENT_ID, guildId),
-        { body: cmdJson }
-      );
+      const data = await this.putData(cmdJson, deployId);
       if (data != null && typeof data == "object" && "length" in data) {
         logger.info(
           `Successfully published ${
@@ -58,27 +59,40 @@ class DeployCommands {
     // save hash to db
     await prisma.lastDeploy.upsert({
       where: {
-        guildId: guildId,
+        guildId: deployId,
       },
       update: {
         hash: cmdHash,
       },
       create: {
-        guildId: guildId,
+        guildId: deployId,
         hash: cmdHash,
       },
     });
+  }
+
+  private async putData(data: unknown, guildId: string) {
+    if (guildId !== "global") {
+      return await this.rest.put(
+        Routes.applicationGuildCommands(Env.DISCORD_CLIENT_ID, guildId),
+        { body: data }
+      );
+    }
+    return await this.rest.put(
+      Routes.applicationCommands(Env.DISCORD_CLIENT_ID),
+      { body: data }
+    );
   }
 
   private commandsLoaded() {
     return this.client.stores.commands.size > 0;
   }
 
-  private async getLastHash() {
+  private async getLastHash(guildId: string) {
     const { prisma } = this.client;
     const lastDeploy = await prisma.lastDeploy.findUnique({
       where: {
-        guildId: Env.DISCORD_DEV_GUILD_ID,
+        guildId: guildId,
       },
     });
 
@@ -97,4 +111,4 @@ class DeployCommands {
   }
 }
 
-export { DeployCommands };
+export { APIDeployer };
