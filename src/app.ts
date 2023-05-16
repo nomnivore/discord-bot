@@ -12,6 +12,7 @@ import { BotListener } from "./botListener.js";
 import { Env } from "./env.js";
 import { Logger } from "./util/logger.js";
 import { prisma } from "./util/db.js";
+import { APIDeployer } from "./util/deploy.js";
 import { performance } from "perf_hooks";
 
 export class BotClient extends Client {
@@ -37,6 +38,8 @@ export class BotClient extends Client {
   async setup() {
     if (this.isSetup) return;
 
+    this.logger.info(`Starting in ${Env.NODE_ENV} mode.`);
+
     // track time for this action
     const startTime = performance.now();
 
@@ -48,6 +51,12 @@ export class BotClient extends Client {
     const endTime = performance.now();
     const time = (endTime - startTime).toFixed(2);
     this.logger.debug(`Setup took ${time}ms.`);
+  }
+
+  async deployCommands(guildId?: string) {
+    const deployer = new APIDeployer(this);
+
+    await deployer.deploy(guildId);
   }
 
   private async recursiveLoader(

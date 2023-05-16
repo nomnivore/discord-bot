@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import { z } from "zod";
 
 const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "production"]).default("development"),
   DISCORD_API_TOKEN: z.string().nonempty(),
   DISCORD_CLIENT_ID: z.string().nonempty(),
   DISCORD_DEV_GUILD_ID: z.string().nonempty(),
@@ -10,7 +11,7 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
-const loadEnv = () => {
+const loadEnv = (): Env => {
   dotenv.config();
 
   const env = envSchema.parse(process.env);
